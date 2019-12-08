@@ -42,6 +42,7 @@ summary(
 summary( 
   lm_robust( data = data_df , 
              formula = log(k_per_capita) ~ prot_imp_rate +
+               hispanic_rate +
                log(population),
              fixed_effects = ~state+year ,
              clusters = state )
@@ -62,6 +63,7 @@ summary(
 summary( 
   lm_robust( data = data_df , 
              formula = log(wage_weekly) ~ prot_imp_rate +
+               hispanic_rate +
                log(population),
              fixed_effects = ~state+year ,
              clusters = state )
