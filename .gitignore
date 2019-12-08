@@ -76,6 +76,9 @@ acs-*.bib
 # endnotes
 *.ent
 
+# excel
+*.xlsx
+
 # fixme
 *.lox
 
@@ -176,6 +179,9 @@ _minted*
 
 # pdfpcnotes
 *.pdfpc
+
+# R data
+*.rds
 
 # sagetex
 *.sagetex.sage
