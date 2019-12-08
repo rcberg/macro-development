@@ -183,6 +183,9 @@ _minted*
 # R data
 *.rds
 
+# Rproj
+*.Rproj
+
 # sagetex
 *.sagetex.sage
 *.sagetex.py
