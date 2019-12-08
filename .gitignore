@@ -184,6 +184,8 @@ _minted*
 
 # scrwfile
 *.wrt
+# stata
+*.dta
 
 # sympy
 *.sout
