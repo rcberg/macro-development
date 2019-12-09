@@ -17,68 +17,191 @@ data_df = readRDS("protestant_america_project_data.rds") %>%
 
 ## education
 # protestant
-summary( 
-  lm_robust( data = data_df , 
+prot_ed_reg_h = lm_robust( data = data_df , 
              formula = educ ~ prot_imp_rate +
                hispanic_rate +
                log(population) ,
-             fixed_effects = ~state+year ,
+             fixed_effects = ~state*year ,
              clusters = state )
-)
+
+prot_ed_reg_nh = lm_robust( data = data_df , 
+                           formula = educ ~ prot_imp_rate +
+                             log(population) ,
+                           fixed_effects = ~state*year ,
+                           clusters = state )
 
 # catholic
-
-summary( 
-  lm_robust( data = data_df , 
+cath_ed_reg = lm_robust( data = data_df , 
              formula = educ ~ cath_rate +
                hispanic_rate +
                log(population) ,
-             fixed_effects = ~state+year ,
+             fixed_effects = ~state*year ,
              clusters = state )
-)
 
 ## capital income (interest, dividends, rent)
 # protestant
-summary( 
-  lm_robust( data = data_df , 
+prot_k_reg_h = lm_robust( data = data_df , 
              formula = log(k_per_capita) ~ prot_imp_rate +
                hispanic_rate +
                log(population),
-             fixed_effects = ~state+year ,
+             fixed_effects = ~state*year ,
              clusters = state )
-)
+
+prot_k_reg_nh = lm_robust( data = data_df , 
+                        formula = log(k_per_capita) ~ prot_imp_rate +
+                          log(population),
+                        fixed_effects = ~state*year ,
+                        clusters = state )
 
 # catholic
-summary( 
-  lm_robust( data = data_df , 
+cath_k_reg = lm_robust( data = data_df , 
              formula = log(k_per_capita) ~ cath_rate +
                hispanic_rate +
                log(population),
-             fixed_effects = ~state+year ,
+             fixed_effects = ~state*year ,
              clusters = state )
-)
 
 ## wages
 #protestant
-summary( 
-  lm_robust( data = data_df , 
+prot_w_reg_h = lm_robust( data = data_df , 
              formula = log(wage_weekly) ~ prot_imp_rate +
                hispanic_rate +
                log(population),
-             fixed_effects = ~state+year ,
+             fixed_effects = ~state*year ,
              clusters = state )
-)
+
+prot_w_reg_nh = lm_robust( data = data_df , 
+                        formula = log(wage_weekly) ~ prot_imp_rate +
+                          log(population),
+                        fixed_effects = ~state*year ,
+                        clusters = state )
 
 #catholic
-
-summary( 
-  lm_robust( data = data_df , 
+cath_w_reg = lm_robust( data = data_df , 
              formula = log(wage_weekly) ~ cath_rate +
                hispanic_rate +
                log(population),
-             fixed_effects = ~state+year ,
+             fixed_effects = ~state*year ,
              clusters = state )
+
+
+##protestant table
+prot_tbl = data.frame( variable = c( "protestant rate" , 
+                                     "protestant rate se" , 
+                                     "log population" , 
+                                     "log population se" , 
+                                     "hispanic rate" , 
+                                     "hispanic rate se" ,
+                                     "N" ) ,
+                       ed_nh = c( prot_ed_reg_nh$coefficients[1] ,
+                                  prot_ed_reg_nh$std.error[1] ,
+                                  prot_ed_reg_nh$coefficients[2] ,
+                                  prot_ed_reg_nh$std.error[2] ,
+                                  NA ,
+                                  NA  ,
+                                  prot_ed_reg_nh$N ) ,
+                       ed_h = c( prot_ed_reg_h$coefficients[1] ,
+                                 prot_ed_reg_h$std.error[1] ,
+                                 prot_ed_reg_h$coefficients[3] ,
+                                 prot_ed_reg_h$std.error[3] ,
+                                 prot_ed_reg_h$coefficients[2] ,
+                                 prot_ed_reg_h$std.error[2] ,
+                                 prot_ed_reg_h$N) ,
+                       kap_nh = c( prot_k_reg_nh$coefficients[1] ,
+                                   prot_k_reg_nh$std.error[1] ,
+                                   prot_k_reg_nh$coefficients[2] ,
+                                   prot_k_reg_nh$std.error[2] ,
+                                  NA ,
+                                  NA ,
+                                  prot_k_reg_nh$N ) ,
+                       kap_h = c( prot_k_reg_h$coefficients[1] ,
+                                  prot_k_reg_h$std.error[1] ,
+                                  prot_k_reg_h$coefficients[3] ,
+                                  prot_k_reg_h$std.error[3] ,
+                                  prot_k_reg_h$coefficients[2] ,
+                                  prot_k_reg_h$std.error[2] ,
+                                  prot_k_reg_h$N ), 
+                       wage_nh = c( prot_w_reg_nh$coefficients[1] ,
+                                    prot_w_reg_nh$std.error[1] ,
+                                    prot_w_reg_nh$coefficients[2] ,
+                                    prot_w_reg_nh$std.error[2] ,
+                                  NA ,
+                                  NA ,
+                                  prot_w_reg_nh$N ) ,
+                       wage_h = c( prot_w_reg_h$coefficients[1] ,
+                                   prot_w_reg_h$std.error[1] ,
+                                   prot_w_reg_h$coefficients[3] ,
+                                   prot_w_reg_h$std.error[3] ,
+                                   prot_w_reg_h$coefficients[2] ,
+                                   prot_w_reg_h$std.error[2] ,
+                                   prot_w_reg_h$N ) 
+                       
+                       )
+
+##catholic table
+cath_tbl = data.frame( variable = c( "catholic rate" , 
+                                     "catholic rate se" , 
+                                     "log population" , 
+                                     "log population se" , 
+                                     "hispanic rate" , 
+                                     "hispanic rate se" ,
+                                     "N" ) ,
+                       ed_h = c( cath_ed_reg$coefficients[1] ,
+                                 cath_ed_reg$std.error[1] ,
+                                 cath_ed_reg$coefficients[3] ,
+                                 cath_ed_reg$std.error[3] ,
+                                 cath_ed_reg$coefficients[2] ,
+                                 cath_ed_reg$std.error[2] ,
+                                 cath_ed_reg$N) ,
+                       kap_h = c( cath_k_reg$coefficients[1] ,
+                                  cath_k_reg$std.error[1] ,
+                                  cath_k_reg$coefficients[3] ,
+                                  cath_k_reg$std.error[3] ,
+                                  cath_k_reg$coefficients[2] ,
+                                  cath_k_reg$std.error[2] ,
+                                  cath_k_reg$N ), 
+                       wage_h = c( cath_w_reg$coefficients[1] ,
+                                   cath_w_reg$std.error[1] ,
+                                   cath_w_reg$coefficients[3] ,
+                                   cath_w_reg$std.error[3] ,
+                                   cath_w_reg$coefficients[2] ,
+                                   cath_w_reg$std.error[2] ,
+                                   cath_w_reg$N ) 
+                       
 )
+
+## testing equality 
+library(car)
+H_edu = lm_robust( data = data_df , 
+           formula = educ ~ cath_rate +
+             prot_imp_rate +
+             log(population),
+           fixed_effects = ~state+year ,
+           clusters = state )
+linearHypothesis( H_edu ,
+                  c("cath_rate = prot_imp_rate"))
+
+H_capital = lm_robust( data = data_df , 
+           formula = log(k_per_capita) ~ cath_rate +
+             prot_imp_rate +
+             hispanic_rate +
+             cath_rate:hispanic_rate +
+             log(population),
+           fixed_effects = ~state+year ,
+           clusters = state )
+linearHypothesis( H_capital ,
+                  c("cath_rate = prot_imp_rate"))
+
+H_wage = lm_robust( data = data_df , 
+           formula = log(wage_weekly) ~ cath_rate +
+             prot_imp_rate +
+             hispanic_rate +
+             cath_rate:hispanic_rate +
+             log(population),
+           fixed_effects = ~state+year ,
+           clusters = state )
+linearHypothesis( H_wage ,
+                  c("cath_rate = prot_imp_rate"))
 
 ### PLOTS 
 protestant_measure_comparison = readRDS( "protestant_measure_comparison.rds")
@@ -214,8 +337,8 @@ data_df %>%
 plot_usmap( regions = "counties" ,
             data = data_df %>%
               filter( year == 2010),
-            values = "prot_imp_rate"   ) +
-  labs( title = "Protestant Share by County (2010)",
+            values = "cath_rate"   ) +
+  labs( title = "Catholic Share by County (2010)",
         fill = "% of Population" , 
         caption = "Sources: US Census Bureau ; Relig. Cong. Membership Files . (Grey indicates missing or incomplete data)" ) +
   scale_fill_continuous( low = "red" , 
