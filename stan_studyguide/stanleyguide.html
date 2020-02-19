@@ -1649,15 +1649,20 @@ c &amp;= \frac{1 + n&#39; + n}{1 + \beta }
 <p>Using the intertemporal/lifetime budget constraint…</p>
 <p><span class="math display">\[\begin{align*}
 
- c&#39; &amp;=  n&#39; + (n - c) \\
+ c&#39; &amp;=  n&#39; + (1 + n - c) \\
  
-c&#39; &amp;= \frac{(1+\beta)}{1+\beta}(n&#39; + n) - \frac{1 + n&#39; + n}{1 + \beta}\\ 
+c&#39; &amp;= \frac{(1+\beta)}{1+\beta}(1 + n&#39; + n) - \frac{1 + n&#39; + n}{1 + \beta}\\ 
 
-&amp;= \frac{\beta (n&#39; + n) + n&#39; + n - (n&#39; + n)}{1 + \beta} - \frac{1}{1 + \beta} \\
-&amp;= \frac{\beta (n&#39; + n) - 1}{1 + \beta}
+&amp;= (1 - \frac{1}{1 + \beta})(1 + n&#39; + n) \\
+&amp;= \frac{\beta (1 + n&#39; + n)}{1 + \beta} \\
+= \beta c
 
 \end{align*}\]</span></p>
-<p>We can clearly see from this that because <span class="math inline">\(0 &lt; \beta &lt; 1\)</span> and <span class="math inline">\(n, n&#39; &lt; 1\)</span> then <span class="math inline">\(c&#39; &lt; c\)</span>. Consumption decreases over time due to discounting.</p>
+<p>Consumption in the future decreases relative to today. Maybe this is intuitive. When we plan our consumption, we gain less utility from one unit of consumption in the future (<span class="math inline">\(c&#39;\)</span>) than consumption today <span class="math inline">\(c\)</span> by a factor of <span class="math inline">\(\beta\)</span>, so our consumption in the future is just scaled-down by the discount rate. <span class="math inline">\(c&#39; = \beta c\)</span> is our result.</p>
+<div id="last-note" class="section level2">
+<h2>Last note</h2>
+<p>If you take <span class="math inline">\(c = c_0\)</span>, you can see that we can iterate this result forward as far as we want. Note that <span class="math inline">\(c_1 = \beta c_0\)</span>; using the formula we solved, we can generalize to <span class="math inline">\(c_t = \beta^t c_0\)</span>. I think this is a really nice general result.</p>
+</div>
 </div>
 
 
