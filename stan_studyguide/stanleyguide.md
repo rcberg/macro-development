@@ -114,7 +114,7 @@ c' &= \frac{(1+\beta)}{1+\beta}(1 + n' + n) - \frac{1 + n' + n}{1 + \beta}\\
 
 &= (1 - \frac{1}{1 + \beta})(1 + n' + n) \\
 &= \frac{\beta (1 + n' + n)}{1 + \beta} \\
-= \beta c
+&= \beta c
 
 \end{align*} 
 
