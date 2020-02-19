@@ -8,7 +8,7 @@ output:
     toc: true
     toc_float: true
     keep_md: true
-  
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -113,8 +113,6 @@ Using the intertemporal/lifetime budget constraint...
  c' &=  n' + (1 + n - c) \\
  
 c' &= \frac{(1+\beta)}{1+\beta}(1 + n' + n) - \frac{1 + n' + n}{1 + \beta}\\ 
-
-&= (1 - \frac{1}{1 + \beta})(1 + n' + n) \\
 &= \frac{\beta (1 + n' + n)}{1 + \beta} \\
 &= \beta c
 
@@ -124,4 +122,27 @@ Consumption in the future decreases relative to today. Maybe this is intuitive. 
 
 ## Last note
 
-If you take $c = c_0$, you can see that we can iterate this result forward as far as we want. Note that $c_1 = \beta c_0$; using the formula we solved, we can generalize to $c_t = \beta^t c_0$. I think this is a really nice general result.
+If you take $c = c_0$, you can see that we can iterate this result forward as far as we want. Note that $c_1 = \beta c_0$; using the formula we solved, we can generalize to $c_t = \beta^t c_0$. I think this is a really nice general result. 
+
+```{r consumptiongraph , dpi = 300}
+library(ggplot2)
+
+beta = 0.95 # Future is worth 5% less than today
+T = 100
+c  = rep(0,T)
+W_0 = 1 # Endowment equals one
+c[1] = W_0
+for(t in 2:length(c) ){
+  c[t] = beta * c[(t-1)]
+}
+
+ggplot( data = as.data.frame( c , t = c(1:T) )  , 
+        aes(x = 1:T , 
+            y = c ) 
+        ) + 
+  geom_line() + 
+  labs( x = "t" , 
+        y = "c" , 
+        caption = "(Plot for the *very* special case of n = 0 in each period with endowment = 1)") + 
+  theme( panel.background = element_rect( fill = 'white'))
+```
