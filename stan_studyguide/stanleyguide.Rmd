@@ -67,7 +67,7 @@ $$ \Rightarrow \max_{c} u(c) + \beta V(y' + (y - c))$$
 
 This bad boy can be solved exactly the way you'd think to solve it. Take that derivative-boye and set it to zero...
 
-$$ \frac{\partial V }{\partial c} - \beta \frac{\partial V}{\partial c'} \frac{\partial c'}{\partial c} = 0 $$
+$$ \frac{\partial V }{\partial c} + \beta \frac{\partial V}{\partial c'} \frac{\partial c'}{\partial c} = 0 $$
 
 # Specific example
 
