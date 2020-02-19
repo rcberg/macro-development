@@ -47,7 +47,12 @@ First, using the left-most equality above, we can write one-period-ahead consump
 
 ...Better yet, using out one-period-ahead notation to simplify:
 
-$$ c' = y' + (y - c)$$
+\begin{align*}
+
+c_{t+1} &= y_{t+1} + y_{t} - c_{t} \\
+\Leftrightarrow c' &= y' + (y - c)
+
+\end{align*}
 
 This is really intuitive. Tomorrow we can consume from our income tomorrow (whatever it may be-- it could just be labor income, or it could be a new endowment, or it could be zero!) *plus* whatever we have left over from last period. It makes perfect sense-- a nice "sanity check" so to speak.
 

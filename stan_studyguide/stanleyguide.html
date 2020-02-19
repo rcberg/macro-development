@@ -1607,7 +1607,12 @@ div.tocify {
 <p><span class="math display">\[\begin{align*} c_{t+1} &amp;= y_{t+1} + s_{t} - s_{t-1} \\ &amp;= y_{t+1} + (y_{t} + s_{t-1} - c_{t})  - s_{t-1} \\ &amp;= y_{t+1} + y_{t} - c_{t}
 \end{align*}\]</span></p>
 <p>…Better yet, using out one-period-ahead notation to simplify:</p>
-<p><span class="math display">\[ c&#39; = y&#39; + (y - c)\]</span></p>
+<p><span class="math display">\[\begin{align*}
+
+c_{t+1} &amp;= y_{t+1} + y_{t} - c_{t} \\
+\Leftrightarrow c&#39; &amp;= y&#39; + (y - c)
+
+\end{align*}\]</span></p>
 <p>This is really intuitive. Tomorrow we can consume from our income tomorrow (whatever it may be– it could just be labor income, or it could be a new endowment, or it could be zero!) <em>plus</em> whatever we have left over from last period. It makes perfect sense– a nice “sanity check” so to speak.</p>
 </div>
 <div id="the-consumer-problem-in-one-step-aheadsequence-form" class="section level2">
