@@ -52,37 +52,37 @@ olg_lumpsum_tax <-
     
     c_young <- 
       w-s
-    n_pop=g
+    n_pop <- g
     lifetime_utility_old <- 
       rep(0,N+1)
     adj_lifetime_utility_old <- 
       rep(0,N+1)
-    generation = 
+    generation  <-  
       rep(0,N+1)
-    old_generation = 
+    old_generation  <-  
       rep(0,N+1)
     tax_amount <-
       rep(0,N+1)
     
     for(t in 2:(N+1)){
       if(t<shock_time){
-        alpha = a
-        beta = b 
-        delta = d
-        n = g
-        g_a = A_g
-        tax_sum = 0 
+        alpha  <-  a
+        beta  <-  b 
+        delta  <-  d
+        n  <-  g
+        g_a  <-  A_g
+        tax_sum  <-  0 
         
       }else{
-        alpha = a+alpha_shock
-        beta = b+beta_shock
-        delta = d+depr_shock
-        n = g+n_shock
-        g_a = A_g+tech_shock
-        tax_sum = paygo_tax
+        alpha  <-  a+alpha_shock
+        beta  <-  b+beta_shock
+        delta  <-  d+depr_shock
+        n  <-  g+n_shock
+        g_a  <-  A_g+tech_shock
+        tax_sum  <-  paygo_tax
       }
       if(t<=N){
-        n_pop = n
+        n_pop <- n
         n_old[t] <- 
           n_young[t-1]
         n_young[t] <- 
@@ -95,7 +95,7 @@ olg_lumpsum_tax <-
           0 
       }
       tax_amount[t] <- tax_sum
-      A[t] = (1+g_a)*A[t-1]
+      A[t]  <-  (1+g_a)*A[t-1]
       k[t] <- 
         s[t-1]/(1+n_pop) - k[t-1]*delta/(1+n_pop)
       y[t] <- 
@@ -112,8 +112,8 @@ olg_lumpsum_tax <-
         (1+r[t])*s[t-1] + (1+n_pop)*tax_sum
       lifetime_utility_old[t] <- 
         log(c_young[t-1]) + beta*log(c_old[t])
-      generation[t] = (t-1)
-      old_generation[t] = (t-2)
+      generation[t]  <-  (t-1)
+      old_generation[t]  <-  (t-2)
       
     }
     
@@ -136,6 +136,8 @@ olg_lumpsum_tax <-
     return(output_df)
     
   }
+
+#try it out
 
 olg_lumpsum_tax_df <- 
   olg_lumpsum_tax(N=200, a = 0.1 , paygo_tax = 0.5, g=0.5 , A_g = 0, A0=10)
@@ -220,50 +222,50 @@ olg_capital_tax <-
     
     c_young <- 
       w-s
-    n_pop=g
+    n_pop <- g
     lifetime_utility_old <- 
       rep(0,N+1)
     adj_lifetime_utility_old <- 
       rep(0,N+1)
-    generation = 
+    generation  <-  
       rep(0,N+1)
-    old_generation = 
+    old_generation  <-  
       rep(0,N+1)
     tax_amount <-
       rep(0,N+1)
     
     for(t in 2:(N+1)){
       if(t<shock_time){
-        alpha = a
-        beta = b 
-        delta = d
-        n = g
-        g_a = A_g
-        tax_sum = 0 
+        alpha  <-  a
+        beta  <-  b 
+        delta  <-  d
+        n  <-  g
+        g_a  <-  A_g
+        tax_sum  <-  0 
         
       }else{
-        alpha = a+alpha_shock
-        beta = b+beta_shock
-        delta = d+depr_shock
-        n = g+n_shock
-        g_a = A_g+tech_shock
-        tax_sum = cap_tax
+        alpha  <-  a+alpha_shock
+        beta  <-  b+beta_shock
+        delta  <-  d+depr_shock
+        n  <-  g+n_shock
+        g_a  <-  A_g+tech_shock
+        tax_sum  <-  cap_tax
       }
       if(t<=N){
-        n_pop = n
+        n_pop  <-  n
         n_old[t] <- 
           n_young[t-1]
         n_young[t] <- 
           (1+n_pop)*n_old[t]
       }else{
-        n_pop=0 
+        n_pop <- 0 
         n_old[t] <- 
           n_young[t-1]
         n_young[t] <-
           0 
       }
       tax_amount[t] <- tax_sum
-      A[t] = (1+g_a)*A[t-1]
+      A[t]  <-  (1+g_a)*A[t-1]
       k[t] <- 
         s[t-1]/(1+n_pop) - k[t-1]*(delta)/(1+n_pop)
       y[t] <- 
@@ -280,15 +282,15 @@ olg_capital_tax <-
         (1+r[t])*s[t-1] + tax_sum*alpha*A[t]*(k[t]^(alpha))
       lifetime_utility_old[t] <- 
         log(c_young[t-1]) + beta*log(c_old[t])
-      generation[t] = (t-1)
-      old_generation[t] = (t-2)
+      generation[t]  <-  (t-1)
+      old_generation[t]  <-  (t-2)
       
     }
     
     
     olg_optimal_capital_tax_function <- 
       function(n,b,a){
-        y = ((1+n)*(1+b)-n*b*((1-a)/a))/((1+n)*(1+b)-n/(1+n))
+        y  <-  ((1+n)*(1+b)-n*b*((1-a)/a))/((1+n)*(1+b)-n/(1+n))
         return(y)
       }
     
@@ -321,6 +323,7 @@ olg_capital_tax <-
     
   }
 
+# try it out
 olg_capital_tax_df <- 
   olg_capital_tax(
     N=200 , a = 0.25 , g=0.01 , b = 0.96 , cap_tax = 0.99
