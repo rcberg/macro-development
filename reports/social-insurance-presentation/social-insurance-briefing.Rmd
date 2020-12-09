@@ -1,0 +1,398 @@
+---
+title: "Briefing: Social Insurance"
+author: "R. Chris Berg"
+date: "12/9/2020"
+output: 
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      echo=F)
+library(ggplot2)
+library(hrbrthemes)
+olg_lumpsum_tax <- 
+  function(a = 0.3 ,
+           b = 0.95 ,
+           d = 0 , 
+           g = 0.03 ,
+           k0 = 1,
+           L0 = 1,
+           N ,
+           A0 = 10,
+           A_g = 0.03 , 
+           alpha_shock =0, 
+           beta_shock =0, 
+           depr_shock =0, 
+           n_shock =0, 
+           tech_shock =0, 
+           shock_time = N/2 ,
+           eps = 0,
+           paygo_tax = 0 ,
+           seed = 414
+  ){
+    set.seed(seed)
+    n_young <- 
+      rep(0,N+1)
+    n_young[1] <- 
+      L0
+    n_old <- 
+      rep(0,N+1)
+    lifetime_utility_old <- 
+      rep(0,N+1)
+    c_young <- 
+      rep(0,N+1)
+    c_old <- 
+      rep(0,N+1)
+    k <- 
+      rep(0,N+1)
+    A <- 
+      rep(0,N+1)
+    A[1] <- 
+      A0
+    
+    k[1] <- 
+      k0
+    
+    y <- 
+      A*(k^a)
+    
+    r <- 
+      a*(k^(a-1))
+    
+    w <- 
+      y-r*k
+    
+    s <- 
+      w*b/(1+b)
+    
+    c_young <- 
+      w-s
+    n_pop <- g
+    lifetime_utility_old <- 
+      rep(0,N+1)
+    adj_lifetime_utility_old <- 
+      rep(0,N+1)
+    generation  <-  
+      rep(0,N+1)
+    old_generation  <-  
+      rep(0,N+1)
+    tax_amount <-
+      rep(0,N+1)
+    e <- 
+      c(0,rnorm(n=N))
+    
+    for(t in 2:(N+1)){
+      if(t<shock_time){
+        alpha  <-  a
+        beta  <-  b 
+        delta  <-  d
+        n  <-  g
+        g_a  <-  A_g
+        tax_sum  <-  0 
+        
+      }else{
+        alpha  <-  a+alpha_shock
+        beta  <-  b+beta_shock
+        delta  <-  d+depr_shock
+        n  <-  g+n_shock
+        g_a  <-  A_g+tech_shock
+        tax_sum  <-  paygo_tax
+      }
+      if(t<=N){
+        n_pop <- n
+        n_old[t] <- 
+          n_young[t-1]
+        n_young[t] <- 
+          (1+n_pop)*n_old[t]
+      }else{
+        n_pop=0 
+        n_old[t] <- 
+          n_young[t-1]
+        n_young[t] <-
+          0 
+      }
+      net_inc <- (1-tax_sum)
+      e[t] <- sample(x = c(1,-1), size = 1)*eps
+      A[t]  <-  (1+g_a)*A[t-1]
+      k[t] <- 
+        s[t-1]/(1+n_pop) - k[t-1]*delta/(1+n_pop)
+      y[t] <- 
+        A[t]*k[t]^alpha
+      r[t] <- 
+        alpha*(A[t]*k[t]^(alpha-1))
+      w[t] <- 
+        y[t]-r[t]*k[t]
+      s[t] <- 
+        0.5*(w[t]*beta/(1+beta) + sqrt(w[t]^2 - 4*(1+beta)*((net_inc/(1+r[t]))*eps)^2)/(1+beta))
+      c_young[t] <- 
+        w[t] - s[t]
+      c_old[t] <- 
+        (1+r[t])*s[t-1] + net_inc*e[t]
+      lifetime_utility_old[t] <- 
+        log(c_young[t-1]) + beta*log(c_old[t])
+      generation[t]  <-  (t-1)
+      old_generation[t]  <-  (t-2)
+      
+    }
+    
+    output_df <- 
+      data.frame( generation = generation ,
+                  old_generation = old_generation ,
+                  n_old = n_old ,
+                  n_young = n_young ,
+                  A = A ,
+                  k = k , 
+                  y = y , 
+                  w = w , 
+                  s = s , 
+                  r = r ,
+                  c_young = c_young , 
+                  c_old = c_old ,
+                  olds_lifetime_u = lifetime_utility_old,
+                  tax_rev = tax_amount*n_young )
+    
+    return(output_df)
+    
+  }
+
+```
+
+## Background 
+
+The first thing economics students typically learn about taxation is simply that it reduces surplus in a market that's in a competitive equilibrium (see pic). While true, this is a highly incomplete summary of what economics has to say about taxation. Without additional context, economics students may attach to this very specific case and become overly-skeptical of legitimate roles of taxation and government intervention.
+
+```{r dwl_tax_graph, out.height="50%", out.width="50%", fig.align='center'}
+knitr::include_graphics("deadweight-loss.png")
+```
+
+Taxation in otherwise-"flawless"^[In terms of being on the "competitive" end of the market structure spectrum.] markets is not the only thing which can reduce consumer surplus, though, and there has been a [large amount of ink spilled](https://en.wikipedia.org/wiki/Theory_of_the_second_best) about the ways that taxation and government intervention can actually improve consumer well-being. The case examined here: risk. Specifically, lifetime income risk.
+
+```{r risk_aversion, fig.align='center'}
+knitr::include_graphics("utility-risk.png")
+```
+
+In the above graph, the solid black line shows how a worker's well-being increases with their consumption-- it has diminishing returns (more is better overall, but you don't savor the first bite as much as the last). The situation described on the graph is where a worker faces a risk of ending up with a "low" consumption level $x_1$ or a "high" consumption level $x_2$. This gamble gives the worker a level of well-being somewhere along dashed line segment connecting the two points of the solid line curve (where, exactly, depends on the chance of winning/losing the gamble). Unless the chance of winning is exactly 0\% or 100\%, the worker would **absolutely** be better-off receiving some *guaranteed* amount of $x$ between the two outcomes. Even with a 99\% chance of winning the amount $x_2$, we could find an amount slightly less than $x_2$ that would make the worker happier if they knew they'd get it for certain. 
+
+In daily life, individuals face all sorts of risks that have little to do with their choices, but could have huge consequences for their lifetime earnings and thus their overall well-being. What if there was a way to remove a lot of this risk from people's lives? We just saw that if we could have some other group take the risk away from the worker and convert it into a guaranteed payment, it would make them better off. Hal Varian, famous microeconomist and Chief Economist at Google, [showed how the government could be the one to step-in](https://www.sciencedirect.com/science/article/abs/pii/0047272780900043) and use taxation to insure individuals against income risk.
+
+## The model
+
+For a deep mathematical treatment, refer to the [aforementioned Varian paper](https://www.sciencedirect.com/science/article/abs/pii/0047272780900043). In English, I will assume that workers go to work and save during an early period of their life, and retire in the later period of their life, which is also when they face some "catastrophic risk" that could significantly affect their well-being. I allow the government to tax workers' income and rebate it to them in the form of what Varian calls a ["demogrant,"](https://en.wikipedia.org/wiki/Citizen%27s_dividend) which reduces the overall income risk the workers face. 
+
+```{r wellbeing_halftax, fig.align='center'}
+olg_lumpsum_tax_50percent_df <- 
+  olg_lumpsum_tax(N=200, paygo_tax = 0.5, A_g = 0, eps = 3)
+
+olg_lumpsum_baseline_df <-  
+  olg_lumpsum_tax(N=200, A_g = 0, eps = 3)
+
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_50percent_df[5:201,] , 
+             aes( x = generation ,
+                  y = c_old,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[5:201,] , 
+             aes( x = generation ,
+                  y = c_old,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "Retirement consumption",
+        title = "Consumption effect of an income tax",
+        color = "Model",
+        caption = "Tax rate of 50%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+```
+
+Up until generation 100, there is no tax and no rebate-- consumers passively accept the uncertainty with their income, and try to adjust their savings to compensate. Upon the 100th generation, the government steps in and imposes a tax rate of 50\%, and fully rebates it to consumers. Visible in the figure, this reduces the variation in retirement consumption.
+
+```{r wellbeing_fulltax, fig.align='center'}
+olg_lumpsum_tax_full_df <- 
+  olg_lumpsum_tax(N=200, paygo_tax = 1, A_g = 0, eps = 3)
+
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_full_df[10:200,] , 
+             aes( x = generation ,
+                  y = c_old,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[10:200,] , 
+             aes( x = generation ,
+                  y = c_old,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "Retirement consumption",
+        title = "Consumption effect of an income tax",
+        color = "Model",
+        caption = "Tax rate of 100%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+```
+
+In the second figure above, the tax rate is instead 100\%-- all unexpected income is confiscated by the tax and fully rebated to the workers. It works-- there is no uncertainty in retirement income anymore. 
+
+### Effect on workers' well-being
+
+So we showed that the government can tax-away uncertainty. While we have a vague sense that the decision-makers dislike risk, there are still a number of channels in this model (investment, wages, interest rates, economic output) that act to un-do this risk aversion. So let's vary the tax rate from 1\% to 100\% and run the simulation 1,000 times for each tax rate, calculating the difference in well-being for each tax rate.
+
+```{r discount_rate_vary, fig.align='center'}
+utility_gain_discount_vary = readRDS("D:/Economics/Projects/macro-development/data/export/soc_insurance_gains_sim_variable_discount_rate.rds")
+
+ggplot(data = utility_gain_discount_vary , 
+       aes(x = rate, y = diff, color = as.factor(b))) + 
+  geom_line() +
+  labs( x = "Tax Rate",
+        y = "Utility gain",
+        color = "Discount rate") +
+  theme_ipsum_rc()
+```
+
+By adjusting the workers' "patience" or "discount" factor-- they might be less-patient, preferring immediate reward to having higher well-being in retirement^[This "discount factor" is directly proportional to how much workers choose to save. A discount factor of 0.55 means that the worker gets about half as much well-being from waiting to consume the proverbial marshmallow in retirement, than if they got to have it now. Studies suggest the discount factor is generally greater than 0.8, macroeconomic models like the one we are using typically use a discount factor of 0.95 as I have done.]-- we can see that the tax always leaves our decision-makers unambiguously better off. In fact, it will be best to have full (or near-full) insurance against risk of this type. These gains furthermore represent a substantial improvement in quality of living-- when translated into a real-world reference point, from these model units, they'd amount to tens of thousands of dollars of lifetime income. 
+
+### Effect on other economic variables
+
+```{r model_vars}
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_full_df[10:200,] , 
+             aes( x = generation ,
+                  y = s,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[10:200,] , 
+             aes( x = generation ,
+                  y = s,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "Savings per worker",
+        title = "Effect of an income tax on savings per worker",
+        color = "Model",
+        caption = "Tax rate of 100%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_full_df[10:200,] , 
+             aes( x = generation ,
+                  y = y,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[10:200,] , 
+             aes( x = generation ,
+                  y = y,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "GDP per capita",
+        title = "Effect of an income tax on GDP per capita",
+        color = "Model",
+        caption = "Tax rate of 100%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_full_df[10:200,] , 
+             aes( x = generation ,
+                  y = k,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[10:200,] , 
+             aes( x = generation ,
+                  y = k,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "Capital per worker",
+        title = "Effect of an income tax on capital per worker",
+        color = "Model",
+        caption = "Tax rate of 100%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_full_df[10:200,] , 
+             aes( x = generation ,
+                  y = w,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[10:200,] , 
+             aes( x = generation ,
+                  y = w,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "Wages",
+        title = "Effect of an income tax on wages",
+        color = "Model",
+        caption = "Tax rate of 100%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+
+ggplot( ) + 
+  geom_line( data = olg_lumpsum_tax_full_df[10:200,] , 
+             aes( x = generation ,
+                  y = r,
+                  color = 'Tax regime') ,
+             size=1,
+             alpha=0.9
+  ) +
+  geom_line( data = olg_lumpsum_baseline_df[10:200,] , 
+             aes( x = generation ,
+                  y = r,
+                  color = 'Baseline')
+  ) + 
+  scale_color_manual(values = c("Tax regime"="red",
+                                "Baseline"="black"))+
+  labs( x = "Generation" , 
+        y = "Return on capital",
+        title = "Effect of an income tax on the return to capital",
+        color = "Model",
+        caption = "Tax rate of 100%"
+  ) +
+  hrbrthemes::theme_ipsum_rc()
+```
+
+As we can see, lower lifetime income uncertainty significantly boosts worker savings, which increases capital per worker as well as GDP per capita and wages. The higher level of capital per worker reduces the return on capital slightly. My suspicion is that this is what leads to the "bent" shape of the well being gain with respect to a higher tax rate-- reducing uncertainty boosts average consumption (thus well-being), but by also reducing the return on capital, it reduces available retirement income by a slight amount, too. In the Varian model this effect doesn't exist because he does not consider effects on capital market (which may not have been as computationally-simple back in the early 1980s).
+
+## Discussion
+
+The take-away from the exercise above is that even substantial risk in lifetime income can be overcome with a basic public insurance scheme that requires no search and purchase of a private contract. One might ask why there *wouldn't* be a private insurance market in this model, because we certainly do rely on private insurance to cover many real-world risks. However, we live in a vast world full of risks for which there are no insurance markets, for various reasons. Historically, for instance, citizens of the United States who had an illness diagnosed and recorded in their medical history may have been disqualified by private health insurers from obtaining a policy that could mitigate their risk. Many wealthy countries dispense with this by offering blanket universal health coverage. 
+
+As another example, think about a worker who might be worried that their particular job becomes automated and they have trouble staying in their occupation in the long-term. This situation is not unfamiliar to many Americans, particularly in the Midwest who had manufacturing jobs in the 1970's. These are examples of what economists call "missing market" problems-- there's no insurer a potentially-vulnerable industry employee can call to write a contract to offset their occupation risk. In general, we see huge earnings inequality/variation even within occupations and parental class which is ostensibly due to chance or accident^[https://www.umass.edu/preferen/gintis/jelpap.pdf], and this model illustrates the possibility for redistributive taxation to improve overall well being in such cases.
+
+A related problem for many kinds of private insurance comes with the fact that even if they could in principle draw a contract to insure many kinds of risk, they may find enforcement or other transaction costs too high to justify a market. Specifically, a particular risk may exist among a group or groups which are too small to insure at a minimum "efficient scale"-- the premium that an insurer would have to offer the small group might be too high for some who would otherwise be willing and able to buy the contract *at a competitive price*. These sorts of transaction costs are another issue that can prevent the formation of efficient private insurance markets.
+
+## Conclusion
+
+We have seen that when workers and consumers face lifetime income risk, it can depress savings and economic output. We have also seen how a linear tax aimed at redistributing random gains and losses can mitigate the income risk and boost economic output and overall welfare. Private insurance markets can and do serve a similar purpose to this tax in the real world. Unfortunately, there are a number of deep conceptual problems (only a couple of which have been discussed in this briefing) which can prevent efficient insurance markets from being realized. The existence of these problems nonetheless renders the taxation and redistribution model used in the text relevant for many risks in market economies.
